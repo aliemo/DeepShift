@@ -54,7 +54,7 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
                         ' (default: resnet18)')
 parser.add_argument('--model', default='', type=str, metavar='MODEL_PATH',
                     help='path to model file to load both its architecture and weights (default: none)')
-parser.add_argument('--datapath', default='./data', type=str, metavar='DATA_PATH',
+parser.add_argument('--datapath', default='../data', type=str, metavar='DATA_PATH',
                         help='path to data file to load or download (default: data)')
 parser.add_argument('--weights', default='', type=str, metavar='WEIGHTS_PATH',
                     help='path to file to load its weights (default: none)')
@@ -552,7 +552,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
     top1 = AverageMeter('Acc@1', ':6.2f')
     top5 = AverageMeter('Acc@5', ':6.2f')
     progress = ProgressMeter(len(train_loader), batch_time, data_time, losses, top1,
-                             prefix="Epoch: [{}]".format(epoch))
+                             prefix="Epoch: [{}/{}]".format(epoch, args.epochs))
 
     # switch to train mode
     model.train()

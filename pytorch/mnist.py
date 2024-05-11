@@ -100,7 +100,7 @@ def main():
                         ' (default: linear)')
     parser.add_argument('--model', default='', type=str, metavar='MODEL_PATH',
                         help='path to model file to load both its architecture and weights (default: none)')
-    parser.add_argument('--datapath', default='', type=str, metavar='DATA_PATH',
+    parser.add_argument('--datapath', default='../data', type=str, metavar='DATA_PATH',
                         help='path to data file to load or download (default: ../data)')
     parser.add_argument('--weights', default='', type=str, metavar='WEIGHTS_PATH',
                         help='path to file to load its weights (default: none)')
