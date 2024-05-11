@@ -54,6 +54,8 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
                         ' (default: resnet18)')
 parser.add_argument('--model', default='', type=str, metavar='MODEL_PATH',
                     help='path to model file to load both its architecture and weights (default: none)')
+parser.add_argument('--datapath', default='./data', type=str, metavar='DATA_PATH',
+                        help='path to data file to load or download (default: data)')
 parser.add_argument('--weights', default='', type=str, metavar='WEIGHTS_PATH',
                     help='path to file to load its weights (default: none)')
 parser.add_argument('-s', '--shift-depth', type=int, default=0,
@@ -408,7 +410,7 @@ def main_worker(gpu, ngpus_per_node, args):
                     print("WARNING: Unable to obtain summary of model")
 
     # Data loading code
-    data_dir = "~/pytorch_datasets"
+    data_dir = args.datapath
     os.makedirs(model_dir, exist_ok=True)
 
     normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465],
@@ -699,7 +701,7 @@ def accuracy(output, target, topk=(1,)):
 
         res = []
         for k in topk:
-            correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
+            correct_k = correct[:k].contiguous().view(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
 

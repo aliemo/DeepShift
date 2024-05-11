@@ -100,6 +100,8 @@ def main():
                         ' (default: linear)')
     parser.add_argument('--model', default='', type=str, metavar='MODEL_PATH',
                         help='path to model file to load both its architecture and weights (default: none)')
+    parser.add_argument('--datapath', default='', type=str, metavar='DATA_PATH',
+                        help='path to data file to load or download (default: ../data)')
     parser.add_argument('--weights', default='', type=str, metavar='WEIGHTS_PATH',
                         help='path to file to load its weights (default: none)')
     parser.add_argument('--shift-depth', type=int, default=0,
@@ -162,14 +164,14 @@ def main():
     device = torch.device("cuda" if use_cuda else "cpu")
     kwargs = {'num_workers': args.workers, 'pin_memory': True} if use_cuda else {}
     train_loader = torch.utils.data.DataLoader(
-        datasets.MNIST('../data', train=True, download=True,
+        datasets.MNIST(args.datapath, train=True, download=True,
                        transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,)) # transforms.Normalize((0,), (255,))
                        ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
     test_loader = torch.utils.data.DataLoader(
-        datasets.MNIST('../data', train=False, transform=transforms.Compose([
+        datasets.MNIST(args.datapath, train=False, transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,)) # transforms.Normalize((0,), (255,))
                        ])),
