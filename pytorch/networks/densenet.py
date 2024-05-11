@@ -15,7 +15,7 @@ class BasicBlock(nn.Module):
         super(BasicBlock, self).__init__()
         planes = expansion * growthRate
         self.bn1 = nn.BatchNorm2d(inplanes)
-        self.conv1 = nn.Conv2d(cfg, growthRate, kernel_size=3, 
+        self.conv1 = nn.Conv2d(cfg, growthRate, kernel_size=3,
                                padding=1, bias=False)
         self.relu = nn.ReLU(inplace=True)
         self.dropRate = dropRate
@@ -48,7 +48,7 @@ class Transition(nn.Module):
 
 class densenet(nn.Module):
 
-    def __init__(self, depth=40, 
+    def __init__(self, depth=40,
         dropRate=0, dataset='cifar10', growthRate=12, compressionRate=1, cfg = None):
         super(densenet, self).__init__()
 

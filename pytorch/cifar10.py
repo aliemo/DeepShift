@@ -34,12 +34,12 @@ import unoptimized
 import networks as models
 
 '''
-Unfortunately, none of the pytorch repositories with ResNets on CIFAR10 provides an 
-implementation as described in the original paper. If you just use the torchvision's 
-models on CIFAR10 you'll get the model that differs in number of layers and parameters. 
-This is unacceptable if you want to directly compare ResNet-s on CIFAR10 with the 
+Unfortunately, none of the pytorch repositories with ResNets on CIFAR10 provides an
+implementation as described in the original paper. If you just use the torchvision's
+models on CIFAR10 you'll get the model that differs in number of layers and parameters.
+This is unacceptable if you want to directly compare ResNet-s on CIFAR10 with the
 original paper. The purpose of resnet_cifar10 (which has been obtained from https://github.com/akamaster/pytorch_resnet_cifar10
-is to provide a valid pytorch implementation of ResNet-s for CIFAR10 as described in the original paper. 
+is to provide a valid pytorch implementation of ResNet-s for CIFAR10 as described in the original paper.
 '''
 
 model_names = sorted(name for name in models.__dict__
@@ -67,25 +67,25 @@ parser.add_argument('-r', '--rounding', default='deterministic', choices=['deter
 parser.add_argument('-wb', '--weight-bits', type=int, default=5,
                     help='number of bits to represent the shift weights')
 parser.add_argument('-ab', '--activation-bits', nargs='+', default=[16,16],
-                    help='number of integer and fraction bits to represent activation (fixed point format)')               
+                    help='number of integer and fraction bits to represent activation (fixed point format)')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 parser.add_argument('--epochs', default=200, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-opt', '--optimizer', metavar='OPT', default="SGD", 
+parser.add_argument('-opt', '--optimizer', metavar='OPT', default="SGD",
                     help='optimizer algorithm')
 parser.add_argument('-b', '--batch-size', default=128, type=int,
                     metavar='N',
                     help='mini-batch size (default: 128), this is the total '
                          'batch size of all GPUs on the current node when '
                          'using Data Parallel or Distributed Data Parallel')
-parser.add_argument('-alt', '--alternate-update', default=False, type=lambda x:bool(distutils.util.strtobool(x)), 
+parser.add_argument('-alt', '--alternate-update', default=False, type=lambda x:bool(distutils.util.strtobool(x)),
                     help='every other epoch, only update either sign or shift parameters')
 parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
-parser.add_argument('--lr-schedule', dest='lr_schedule', default=True, type=lambda x:bool(distutils.util.strtobool(x)), 
+parser.add_argument('--lr-schedule', dest='lr_schedule', default=True, type=lambda x:bool(distutils.util.strtobool(x)),
                     help='using learning rate schedule')
 parser.add_argument('--lr-step-size', default=None, type=int,
                     help='number of epochs to decay learning rate by factor of 10')
@@ -102,9 +102,9 @@ parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
                     help='only evaluate model on validation set')
-parser.add_argument('--pretrained', dest='pretrained', default=False, type=lambda x:bool(distutils.util.strtobool(x)), 
+parser.add_argument('--pretrained', dest='pretrained', default=False, type=lambda x:bool(distutils.util.strtobool(x)),
                     help='use pre-trained model')
-parser.add_argument('--freeze', dest='freeze', default=False, type=lambda x:bool(distutils.util.strtobool(x)), 
+parser.add_argument('--freeze', dest='freeze', default=False, type=lambda x:bool(distutils.util.strtobool(x)),
                     help='freeze pre-trained weights')
 parser.add_argument('--world-size', default=-1, type=int,
                     help='number of nodes for distributed training')
@@ -124,9 +124,9 @@ parser.add_argument('--multiprocessing-distributed', action='store_true',
                          'fastest way to use PyTorch for either single node or '
                          'multi node data parallel training')
 
-parser.add_argument('--save-model', default=True, type=lambda x:bool(distutils.util.strtobool(x)), 
+parser.add_argument('--save-model', default=True, type=lambda x:bool(distutils.util.strtobool(x)),
                     help='For Saving the current Model (default: True)')
-parser.add_argument('--print-weights', default=True, type=lambda x:bool(distutils.util.strtobool(x)), 
+parser.add_argument('--print-weights', default=True, type=lambda x:bool(distutils.util.strtobool(x)),
                     help='For printing the weights of Model (default: True)')
 parser.add_argument('--desc', type=str, default=None,
                     help='description to append to model directory name')
@@ -204,13 +204,13 @@ def main_worker(gpu, ngpus_per_node, args):
         saved_checkpoint = torch.load(args.model)
         if isinstance(saved_checkpoint, nn.Module):
             model = saved_checkpoint
-        elif "model" in saved_checkpoint:   
+        elif "model" in saved_checkpoint:
             model = saved_checkpoint["model"]
         else:
-            raise Exception("Unable to load model from " + args.model)   
+            raise Exception("Unable to load model from " + args.model)
 
         if (args.gpu is not None):
-            model.cuda(args.gpu) 
+            model.cuda(args.gpu)
     elif args.pretrained:
         print("=> using pre-trained model '{}'".format(args.arch))
         model = models.__dict__[args.arch](pretrained=True)
@@ -220,7 +220,7 @@ def main_worker(gpu, ngpus_per_node, args):
 
     model_rounded = None
 
-    #TODO: add option for finetune vs. feature extraction that only work if pretrained weights are imagenet    
+    #TODO: add option for finetune vs. feature extraction that only work if pretrained weights are imagenet
     if args.freeze and args.pretrained != "none":
         for param in model.parameters():
             param.requires_grad = False
@@ -233,7 +233,7 @@ def main_worker(gpu, ngpus_per_node, args):
             state_dict = saved_weights["state_dict"]
         else:
             state_dict = saved_weights
-            
+
         try:
             model.load_state_dict(state_dict)
         except:
@@ -242,7 +242,7 @@ def main_worker(gpu, ngpus_per_node, args):
             for k, v in state_dict.items():
                 name = k[7:] # remove module.
                 new_state_dict[name] = v
-                
+
             model.load_state_dict(new_state_dict)
 
     if args.shift_depth > 0:
@@ -303,7 +303,7 @@ def main_worker(gpu, ngpus_per_node, args):
         ]
 
     # define optimizer
-    optimizer = None 
+    optimizer = None
     if(args.optimizer.lower() == "sgd"):
         optimizer = torch.optim.SGD(params_dict, args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     elif(args.optimizer.lower() == "adadelta"):
@@ -437,8 +437,8 @@ def main_worker(gpu, ngpus_per_node, args):
 
     val_loader = torch.utils.data.DataLoader(
         datasets.CIFAR10(
-            root=data_dir, 
-            train=False, 
+            root=data_dir,
+            train=False,
             transform=transforms.Compose([
                 transforms.ToTensor(),
                 normalize,
@@ -488,7 +488,7 @@ def main_worker(gpu, ngpus_per_node, args):
             # append to log
             with open(os.path.join(model_dir, "train_log.csv"), "a") as train_log_file:
                 train_log_csv = csv.writer(train_log_file)
-                train_log_csv.writerow(((epoch,) + train_epoch_log + val_epoch_log)) 
+                train_log_csv.writerow(((epoch,) + train_epoch_log + val_epoch_log))
 
             # remember best acc@1 and save checkpoint
             is_best = acc1 > best_acc1
@@ -515,9 +515,9 @@ def main_worker(gpu, ngpus_per_node, args):
 
                             torch.save(model_rounded.state_dict(), os.path.join(model_dir, "weights.pth"))
                             torch.save(model_rounded, os.path.join(model_dir, "model.pth"))
-                    except: 
+                    except:
                         print("WARNING: Unable to save model.pth")
-                
+
                 save_checkpoint({
                     'epoch': epoch + 1,
                     'arch': args.arch,
@@ -589,7 +589,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
 
         if i % args.print_freq == 0:
             progress.print(i)
-    
+
     return (losses.avg, top1.avg.cpu().numpy(), batch_time.avg)
 
 

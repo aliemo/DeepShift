@@ -69,14 +69,14 @@ parser.add_argument('-r', '--rounding', default='deterministic', choices=['deter
 parser.add_argument('-wb', '--weight-bits', type=int, default=5,
                     help='number of bits to represent the weights')
 parser.add_argument('-ab', '--activation-bits', nargs='+', default=[16,16],
-                    help='number of integer and fraction bits to represent activation (fixed point format)') 
+                    help='number of integer and fraction bits to represent activation (fixed point format)')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 parser.add_argument('--epochs', default=90, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-opt', '--optimizer', metavar='OPT', default="SGD", 
+parser.add_argument('-opt', '--optimizer', metavar='OPT', default="SGD",
                     help='optimizer algorithm')
 parser.add_argument('-b', '--batch-size', default=256, type=int,
                     metavar='N',
@@ -88,7 +88,7 @@ parser.add_argument('-bm', '--batch-multiplier', default=1, type=int,
                          'effective batch size is batch-size * batch-multuplier')
 parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
-parser.add_argument('--lr-schedule', dest='lr_schedule', default=True, type=lambda x:bool(distutils.util.strtobool(x)), 
+parser.add_argument('--lr-schedule', dest='lr_schedule', default=True, type=lambda x:bool(distutils.util.strtobool(x)),
                     help='using learning rate schedule')
 parser.add_argument('--lr-step-size', default=30, type=int,
                     help='epoch numbers at which to decay learning rate (only applicable if --lr-schedule is set to StepLR)', dest='lr_step_size')
@@ -107,7 +107,7 @@ parser.add_argument('--resume', default='', type=str, metavar='CHECKPOINT_PATH',
                     help='path to latest checkpoint (default: none)')
 parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
                     help='only evaluate model on validation set')
-parser.add_argument('--pretrained', dest='pretrained', default=False, type=lambda x:bool(distutils.util.strtobool(x)), 
+parser.add_argument('--pretrained', dest='pretrained', default=False, type=lambda x:bool(distutils.util.strtobool(x)),
                     help='use pre-trained model')
 parser.add_argument('--world-size', default=-1, type=int,
                     help='number of nodes for distributed training')
@@ -127,9 +127,9 @@ parser.add_argument('--multiprocessing-distributed', action='store_true',
                          'fastest way to use PyTorch for either single node or '
                          'multi node data parallel training')
 
-parser.add_argument('--save-model', default=True, type=lambda x:bool(distutils.util.strtobool(x)), 
+parser.add_argument('--save-model', default=True, type=lambda x:bool(distutils.util.strtobool(x)),
                     help='For Saving the current Model (default: True)')
-parser.add_argument('--print-weights', default=True, type=lambda x:bool(distutils.util.strtobool(x)), 
+parser.add_argument('--print-weights', default=True, type=lambda x:bool(distutils.util.strtobool(x)),
                     help='For printing the weights of Model (default: True)')
 parser.add_argument('--desc', type=str, default=None,
                     help='description to append to model directory name')
@@ -205,13 +205,13 @@ def main_worker(gpu, ngpus_per_node, args):
         saved_checkpoint = torch.load(args.model)
         if isinstance(saved_checkpoint, nn.Module):
             model = saved_checkpoint
-        elif "model" in saved_checkpoint:   
+        elif "model" in saved_checkpoint:
             model = saved_checkpoint["model"]
         else:
-            raise Exception("Unable to load model from " + args.model)   
+            raise Exception("Unable to load model from " + args.model)
 
         if (args.gpu is not None):
-            model.cuda(args.gpu) 
+            model.cuda(args.gpu)
     elif args.pretrained:
         print("=> using pre-trained model '{}'".format(args.arch))
         model = models.__dict__[args.arch](pretrained=True)
@@ -229,7 +229,7 @@ def main_worker(gpu, ngpus_per_node, args):
             state_dict = saved_weights["state_dict"]
         else:
             state_dict = saved_weights
-            
+
         try:
             model.load_state_dict(state_dict)
         except:
@@ -238,7 +238,7 @@ def main_worker(gpu, ngpus_per_node, args):
             for k, v in state_dict.items():
                 name = k[7:] # remove module.
                 new_state_dict[name] = v
-                
+
             model.load_state_dict(new_state_dict)
 
     if args.shift_depth > 0:
@@ -298,7 +298,7 @@ def main_worker(gpu, ngpus_per_node, args):
         ]
 
     # define optimizer
-    optimizer = None 
+    optimizer = None
     if(args.optimizer.lower() == "sgd"):
         optimizer = torch.optim.SGD(params_dict, args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     elif(args.optimizer.lower() == "adadelta"):
@@ -328,7 +328,7 @@ def main_worker(gpu, ngpus_per_node, args):
         if 'lr_scheduler' in opt_ckpt:
             lr_scheduler = opt_ckpt['lr_scheduler']
 
-    # TODO: enable different lr scheduling algorithms 
+    # TODO: enable different lr scheduling algorithms
     #if (args.lr_schedule and lr_scheduler is not None):
     #    lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,
     #                                                        milestones=[100, 150], last_epoch=args.start_epoch - 1)
@@ -358,7 +358,7 @@ def main_worker(gpu, ngpus_per_node, args):
                     else:
                         name = k[7:] # remove "module" at beginning of name
                     new_state_dict[name] = v
-                
+
                 # load params
                 model.load_state_dict(new_state_dict)
             optimizer.load_state_dict(checkpoint['optimizer'])
@@ -497,7 +497,7 @@ def main_worker(gpu, ngpus_per_node, args):
             # append to log
             with open(os.path.join(model_dir, "train_log.csv"), "a") as train_log_file:
                 train_log_csv = csv.writer(train_log_file)
-                train_log_csv.writerow(((epoch,) + train_epoch_log + val_epoch_log + (time.time() - start_log_time,))) 
+                train_log_csv.writerow(((epoch,) + train_epoch_log + val_epoch_log + (time.time() - start_log_time,)))
 
             # remember best acc@1 and save checkpoint
             is_best = acc1 > best_acc1
@@ -523,9 +523,9 @@ def main_worker(gpu, ngpus_per_node, args):
 
                             torch.save(model_rounded.state_dict(), os.path.join(model_dir, "weights.pth"))
                             torch.save(model_rounded, os.path.join(model_dir, "model.pth"))
-                    except: 
+                    except:
                         print("WARNING: Unable to save model.pth")
-                
+
                 save_checkpoint({
                     'epoch': epoch + 1,
                     'arch': args.arch,
@@ -603,7 +603,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
             progress.print(i)
 
         sub_batch_count -= 1
-    
+
     return (losses.avg, top1.avg.cpu().numpy(), top5.avg.cpu().numpy(), batch_time.avg)
 
 
@@ -662,7 +662,7 @@ def save_checkpoint(state, is_best, dir_path, filename='checkpoint.pth.tar'):
         shutil.copyfile(os.path.join(dir_path, filename), os.path.join(dir_path, 'model_best.pth.tar'))
 
     if (state['epoch']-1)%10 == 0:
-        shutil.copyfile(os.path.join(dir_path, filename), os.path.join(dir_path, 'checkpoint_' + str(state['epoch']-1) + '.pth.tar'))    
+        shutil.copyfile(os.path.join(dir_path, filename), os.path.join(dir_path, 'checkpoint_' + str(state['epoch']-1) + '.pth.tar'))
 
 
 class AverageMeter(object):

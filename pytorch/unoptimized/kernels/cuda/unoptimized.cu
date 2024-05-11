@@ -32,17 +32,17 @@ __global__ void IM2COL(
         const int ic = w / (filter_height * filter_width);
         const int hh_f = (w % (filter_height * filter_width)) / filter_width;
         const int ww_f = (w % (filter_height * filter_width)) % filter_width;
-        
+
         col[index] = im[ww_f + strides_w * w_out +
                         (hh_f + strides_h * h_out) * in_width +
                         ic * in_width * in_height +
                         n * in_width * in_height * input_features];
-    }     
+    }
 }
 
 
 __global__ void COL2IM(
-    const int total, 
+    const int total,
     const float* __restrict__ col,
     float* __restrict__ im,
     const int out_height,
@@ -67,8 +67,8 @@ __global__ void GEMM(
     float* __restrict__ output,
     const int n,
     const int m,
-    const int k, 
-    const int max) 
+    const int k,
+    const int max)
 {
 
     const int row = threadIdx.y;
@@ -85,15 +85,15 @@ __global__ void GEMM(
                 As[row * BLOCK_SIZE + col] = Asub[row*n+col];
                 Bs[row * BLOCK_SIZE + col] = shift[(original_index)];
                 __syncthreads();
-                
+
                 #pragma unroll
                 for (int j = 0; j < BLOCK_SIZE ; ++j){
-                    if(col + blockCol* BLOCK_SIZE< k 
+                    if(col + blockCol* BLOCK_SIZE< k
                         && row + blockRow* BLOCK_SIZE< m
                         && i * BLOCK_SIZE  + j < n){
                             Cvalue += (As[row * BLOCK_SIZE + j] * Bs[col * BLOCK_SIZE + j]);
                     }
-                } 
+                }
                 __syncthreads();
             }
             if(col + blockCol* BLOCK_SIZE< k && row + blockRow* BLOCK_SIZE< m) Csub[row*k+col] = Cvalue + bias[col + blockCol* BLOCK_SIZE];
@@ -109,7 +109,7 @@ void UNOPTIMIZED_LINEAR_GPU(
     torch::Tensor bias,
     torch::Tensor output)
 {
-    
+
     dim3 blockDim(BLOCK_SIZE, BLOCK_SIZE);
     int a1=weight.size(0)/ BLOCK_SIZE + 1;
     if(a1> MAX_BLOCKS){
@@ -138,7 +138,7 @@ void UNOPTIMIZED_CONV_GPU(
     torch::Tensor shift,
     torch::Tensor bias,
     torch::Tensor output,
-    torch::IntArrayRef strides, 
+    torch::IntArrayRef strides,
     torch::IntArrayRef padding)
 {
     int strides_h;
@@ -149,7 +149,7 @@ void UNOPTIMIZED_CONV_GPU(
     }
     else{
         strides_h = strides[0];
-        strides_w = strides[1]; 
+        strides_w = strides[1];
     }
     int k  = shift.size(2) * shift.size(3) * data_im.size(1);
     int num_p = output.size(0) * output.size(2) * output.size(3);
@@ -159,12 +159,12 @@ void UNOPTIMIZED_CONV_GPU(
 
     int threads = MAX_THREADS;
     int tmp = (k * num_p + threads -1) / threads;
-    tmp  = (tmp > MAX_BLOCKS) ? MAX_BLOCKS: tmp;  
+    tmp  = (tmp > MAX_BLOCKS) ? MAX_BLOCKS: tmp;
     const dim3 blk(tmp);
     AT_DISPATCH_ALL_TYPES(data_im.type(), "IM2COL cuda", ([&] {
         IM2COL<<<blk, threads>>>(
         k * num_p,
-        data_im.data<float>(), 
+        data_im.data<float>(),
         data_col,
         shift.size(2),
         shift.size(3),
@@ -181,7 +181,7 @@ void UNOPTIMIZED_CONV_GPU(
     dim3 blockDim(BLOCK_SIZE, BLOCK_SIZE);
     int a1=filter_p/ BLOCK_SIZE + 1;
     if(a1> MAX_BLOCKS){
-        a1 = MAX_BLOCKS;   
+        a1 = MAX_BLOCKS;
     }
     int a2=num_p  / BLOCK_SIZE + 1;
     if(a2> MAX_BLOCKS) {
@@ -192,7 +192,7 @@ void UNOPTIMIZED_CONV_GPU(
     float *out_col;
     int max =(k + BLOCK_SIZE - 1) / BLOCK_SIZE;
     cudaMalloc(&out_col,  num_p * filter_p * sizeof(float));
-    AT_DISPATCH_ALL_TYPES(data_im.type(), "GEMM unoptimized kernel", ([&] {  
+    AT_DISPATCH_ALL_TYPES(data_im.type(), "GEMM unoptimized kernel", ([&] {
         GEMM<<<gridDim, blockDim>>>(
         data_col,
         shift.data<float>(),
@@ -208,7 +208,7 @@ void UNOPTIMIZED_CONV_GPU(
     AT_DISPATCH_ALL_TYPES(data_im.type(), "COL2IM cuda", ([&] {
         COL2IM<<<block1, threads>>>(
             num_p * output.size(1),
-            out_col, 
+            out_col,
             output.data<float>(),
             output.size(2),
             output.size(3),

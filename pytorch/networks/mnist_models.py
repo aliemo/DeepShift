@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
@@ -5,14 +6,14 @@ import numpy as np
 class LinearMNIST(nn.Module):
     def __init__(self):
         super(LinearMNIST, self).__init__()
-        self.fc1 = nn.Linear(1*28*28, 512)  
+        self.fc1 = nn.Linear(1*28*28, 512)
         self.dropout1 = nn.Dropout(0.2)
         self.fc2 = nn.Linear(512, 512)
         self.dropout2 = nn.Dropout(0.2)
         self.fc3 = nn.Linear(512, 10)
 
     def forward(self, x):
-        x = x.view(-1, 1 * 28 * 28) 
+        x = x.view(-1, 1 * 28 * 28)
         x = F.relu(self.fc1(x))
         x = self.dropout1(x)
         x = F.relu(self.fc2(x))
@@ -39,9 +40,9 @@ class ConvMNIST(nn.Module):
         return F.log_softmax(x, dim=1)
 
 
-class LeNetMNIST(torch.nn.Module):
+class LeNetMNIST(nn.Module):
     def __init__(self):
-        
+
         super(LeNetMNIST, self).__init__()
         # feature extractor CNN
         self._feature_extractor = nn.Sequential(
@@ -66,4 +67,3 @@ class LeNetMNIST(torch.nn.Module):
         features = features.view(-1, np.prod(features.size()[1:]))
         # classify and return
         return self._classifier(features)
-    

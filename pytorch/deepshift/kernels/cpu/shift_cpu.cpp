@@ -58,25 +58,25 @@ using namespace std;
 //         duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
 
 //         std::cout<<"One batch use "<< duration <<'\n';
-   
+
 //      }
 //     // std::cout<<"Finish one call"<<std::endl;
 //     // duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
 
 //     // std::cout<<"One call use "<< duration <<'\n';
 //     return output;
-// }   
+// }
 void stub(
     vector<vector<int32_t>>& input,
     vector<vector<int8_t>>& shift,
     vector<vector<int32_t>>& sign ,
     vector<int32_t>& bias,
-    unsigned int start, 
+    unsigned int start,
     unsigned int end,
     unsigned int idx,
     vector<vector<int32_t>>& output)
 {
-    
+
     for(unsigned int  batch = 0 ;  batch < input.size(); batch++    ){
         for(unsigned int output_feature = start ; output_feature < end; output_feature++){
             for(unsigned int input_feature = 0; input_feature <input[0].size();input_feature++){
@@ -92,18 +92,18 @@ void stub(
                 //else if(sign[output_feature][input_feature] == 0) {
                 //    y += 0;
                 //}
-              
+
                 output[batch][output_feature] = y;
-             
+
             }
             auto b = bias[output_feature];
-      
+
             output[batch][output_feature] += b;
-     
-            
+
+
         }
     }
-    
+
 }
 
 vector<vector<int32_t>> linear_kernel(
@@ -125,8 +125,8 @@ vector<vector<int32_t>> linear_kernel(
     // std::clock_t start;
     // double duration;
     // start = std::clock();
-   
-    vector<int32_t> n(shift.size(), 0); 
+
+    vector<int32_t> n(shift.size(), 0);
     vector<vector<int32_t>> output(input.size(), n);
 
     // //**************************************
@@ -216,7 +216,7 @@ vector<vector<int32_t>> linear_kernel(
         // duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
 
         // std::cout<<"One batch use "<< duration <<'\n';
-   
+
      }
     });
 
@@ -226,7 +226,7 @@ vector<vector<int32_t>> linear_kernel(
 
     // std::cout<<"One call use "<< duration <<'\n';
     return output;
-}   
+}
 
 
 // torch::Tensor convolution_kernal(
@@ -249,9 +249,9 @@ vector<vector<int32_t>> linear_kernel(
 //     }
 //     torch::Tensor input = torch::constant_pad_nd(input_,padding, 0);
 //     int out_height = (input.size(2) - shift.size(2)) / strides_h +1;
-    
+
 //     int out_width = (input.size(3) - shift.size(3)) / strides_w +1;
-    
+
 //     torch::Tensor output = torch::zeros({input.size(0),shift.size(0),out_height, out_width }, torch::dtype(torch::kInt32));
 //     cout<<output<<endl;
 //     for (int batch = 0; batch < output.size(0); batch++) {//batch
@@ -262,31 +262,31 @@ vector<vector<int32_t>> linear_kernel(
 // 					for (int filter_height = 0; filter_height < shift.size(2); filter_height++) {//filter_height
 // 						for (int filter_width = 0; filter_width < shift.size(3); filter_width++) {//filter_width
 // 							for (int in_channel = 0; in_channel < input.size(1); in_channel++) {//in_channel
-                                
+
 //                                 auto s = shift[out_channel][in_channel][filter_height][filter_width].item<int8_t>();
-                              
+
 //                                 auto out = output[batch][out_channel][out_height][out_width].item<int32_t>();
-                              
+
 //                                 auto data = input[batch][in_channel][out_height * strides_h + filter_height][out_width * strides_w + filter_width].item<int32_t>();
-                               
+
 //                                 if(sign[out_channel][in_channel][filter_height][filter_width].item<bool>()){
 //                                     out -= (data << s);
 //                                 }
 //                                 else{
 //                                     out += (data << s);
 //                                 }
-                    
+
 // 								output[batch][out_channel][out_height][out_width] =out;
 
 // 							}
 // 						}
 // 					}
-                 
+
 //                     output[batch][out_channel][out_height][out_width] +=b;
 // 				}
 // 			}
-            
-            
+
+
 // 		}
 // 	}
 //     return output;
@@ -315,11 +315,11 @@ vector<vector<vector<vector<int32_t>>>> convolution_kernel(
     }
     // torch::Tensor input = torch::constant_pad_nd(input_,padding, 0);
     int out_height = (input[0][0].size() - shift[0][0].size()) / strides_h +1;
-    
+
     int out_width = (input[0][0][0].size() - shift[0][0][0].size()) / strides_w +1;
-    
+
     // torch::Tensor output = torch::zeros({input.size(),shift.size(),out_height, out_width }, torch::dtype(torch::kInt32));
-    vector<int32_t> l1(out_width,0); 
+    vector<int32_t> l1(out_width,0);
     vector<vector<int32_t>> l2(out_height,l1);
     vector<vector<vector<int32_t>>> l3(shift.size(), l2);
     vector<vector<vector<vector<int32_t>>>> output(input.size(), l3);
@@ -332,13 +332,13 @@ vector<vector<vector<vector<int32_t>>>> convolution_kernel(
 					for (unsigned int filter_height = 0; filter_height < shift[0][0].size(); filter_height++) {//filter_height
 						for (unsigned int filter_width = 0; filter_width < shift[0][0][0].size(); filter_width++) {//filter_width
 							for (unsigned int in_channel = 0; in_channel < input[0].size(); in_channel++) {//in_channel
-                                
+
                                 auto s = shift[out_channel][in_channel][filter_height][filter_width];
-                              
+
                                 auto y = output[batch][out_channel][out_height][out_width];
-                              
+
                                 auto x = input[batch][in_channel][out_height * strides_h + filter_height][out_width * strides_w + filter_width];
-                               
+
                                 if(sign[out_channel][in_channel][filter_height][filter_width] < 0 && s >=0 ){
                                     y -= (x << s);
                                 }
@@ -356,12 +356,12 @@ vector<vector<vector<vector<int32_t>>>> convolution_kernel(
 							}
 						}
 					}
-                 
+
                     output[batch][out_channel][out_height][out_width] +=b;
 				}
 			}
-            
-            
+
+
 		}
 	}
     });
@@ -377,4 +377,3 @@ PYBIND11_MODULE(deepshift_cpu, m) {
     m.def("linear_kernel", &linear_kernel, "linear_kernel");
     m.def("convolution_kernel", &convolution_kernel, "convolution_kernel");
 }
-

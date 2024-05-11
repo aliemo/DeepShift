@@ -39,7 +39,7 @@ def summary_string(model, input_size, batch_size=-1, device="cuda", dtypes=None)
             params_bits = 0
             # TODO: handle batchnorm params
             if hasattr(module, "weight") and hasattr(module.weight, "size"):
-                weight_params = torch.prod(torch.LongTensor(list(module.weight.size()))) 
+                weight_params = torch.prod(torch.LongTensor(list(module.weight.size())))
                 params += weight_params
                 params_bits += weight_params * 32
 
@@ -63,7 +63,7 @@ def summary_string(model, input_size, batch_size=-1, device="cuda", dtypes=None)
                 params += running_mean_params
                 params_bits += running_mean_params * 32
             if hasattr(module, "running_var") and hasattr(module.running_var, "size") and hasattr(module, "track_running_stats") and module.track_running_stats:
-                running_var_params = torch.prod(torch.LongTensor(list(module.running_var.size()))) 
+                running_var_params = torch.prod(torch.LongTensor(list(module.running_var.size())))
                 params += running_var_params
                 params_bits += running_var_params * 32
             summary[m_key]["nb_params"] = params
@@ -153,5 +153,5 @@ def summary_string(model, input_size, batch_size=-1, device="cuda", dtypes=None)
     summary_str += "Params size (MB): %0.2f" % total_params_size + "\n"
     summary_str += "Estimated Total Size (MB): %0.2f" % total_size + "\n"
     summary_str += "----------------------------------------------------------------" + "\n"
-    
+
     return summary_str, (total_params, trainable_params)

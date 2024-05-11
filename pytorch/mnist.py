@@ -76,9 +76,9 @@ def main():
     parser.add_argument('-r', '--rounding', default='deterministic', choices=['deterministic', 'stochastic'],
                         help='type of rounding (default: deterministic)')
     parser.add_argument('-wb', '--weight-bits', type=int, default=5,
-                        help='number of bits to represent the shift weights') 
+                        help='number of bits to represent the shift weights')
     parser.add_argument('-ab', '--activation-bits', nargs='+', default=[16,16],
-                        help='number of integer and fraction bits to represent activation (fixed point format)')   
+                        help='number of integer and fraction bits to represent activation (fixed point format)')
     parser.add_argument('-j', '--workers', default=1, type=int, metavar='N',
                         help='number of data loading workers (default: 1)')
     parser.add_argument('--batch-size', type=int, default=64, metavar='N',
@@ -87,7 +87,7 @@ def main():
                         help='input batch size for testing (default: 1000)')
     parser.add_argument('--epochs', type=int, default=10, metavar='N',
                         help='number of epochs to train (default: 10)')
-    parser.add_argument('-opt', '--optimizer', metavar='OPT', default="SGD", 
+    parser.add_argument('-opt', '--optimizer', metavar='OPT', default="SGD",
                         help='optimizer algorithm')
     parser.add_argument('--lr', type=float, default=0.01, metavar='LR',
                         help='learning rate (default: 0.01)')
@@ -103,12 +103,12 @@ def main():
                         help='random seed (default: 1)')
     parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                         help='how many batches to wait before logging training status')
-    parser.add_argument('--pretrained', dest='pretrained', default=False, type=lambda x:bool(distutils.util.strtobool(x)), 
+    parser.add_argument('--pretrained', dest='pretrained', default=False, type=lambda x:bool(distutils.util.strtobool(x)),
                         help='use pre-trained model of full conv or fc model')
-    
-    parser.add_argument('--save-model', default=True, type=lambda x:bool(distutils.util.strtobool(x)), 
+
+    parser.add_argument('--save-model', default=True, type=lambda x:bool(distutils.util.strtobool(x)),
                         help='For Saving the current Model (default: True)')
-    parser.add_argument('--print-weights', default=True, type=lambda x:bool(distutils.util.strtobool(x)), 
+    parser.add_argument('--print-weights', default=True, type=lambda x:bool(distutils.util.strtobool(x)),
                         help='For printing the weights of Model (default: True)')
     parser.add_argument('--desc', type=str, default=None,
                         help='description to append to model directory name')
@@ -123,7 +123,7 @@ def main():
 
     if(args.evaluate is False and args.use_kernel is True):
         raise ValueError('Our custom kernel currently supports inference only, not training.')
-    
+
     torch.manual_seed(args.seed)
 
     device = torch.device("cuda" if use_cuda else "cpu")
@@ -162,7 +162,7 @@ def main():
         if args.pretrained:
             model.load_state_dict(torch.load("./models/mnist/simple_" + args.type + "/shift_0/weights.pth"))
             model = model.to(device)
-    
+
     model_rounded = None
 
     if args.weights:
@@ -173,7 +173,7 @@ def main():
             state_dict = saved_weights["state_dict"]
         else:
             state_dict = saved_weights
-            
+
         model.load_state_dict(state_dict)
 
     if args.shift_depth > 0:
@@ -185,10 +185,10 @@ def main():
     elif args.use_kernel and args.shift_depth == 0:
         model = convert_to_unoptimized(model)
         model = model.to(device)
-    
+
     loss_fn = F.cross_entropy # F.nll_loss
     # define optimizer
-    optimizer = None 
+    optimizer = None
     if(args.optimizer.lower() == "sgd"):
         optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.momentum)
     elif(args.optimizer.lower() == "adadelta"):
@@ -334,7 +334,7 @@ def main():
                     print(param_tensor, "\t", model_rounded.state_dict()[param_tensor].size())
                     print(model_rounded.state_dict()[param_tensor])
                     print("")
-        
+
 if __name__ == '__main__':
     main()
     torch.cuda.empty_cache()

@@ -12,7 +12,7 @@ import time
 
 class UnoptimizedLinear(nn.Module):
     def __init__(self, in_features, out_features, bias=True):
- 
+
         super(UnoptimizedLinear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
@@ -28,13 +28,13 @@ class UnoptimizedLinear(nn.Module):
 
     def reset_parameters(self):
         init.kaiming_uniform_(self.weight, a=math.sqrt(5))
-        
+
         if self.bias is not None:
             fan_in, _ = init._calculate_fan_in_and_fan_out(self.weight)
             bound = 1 / math.sqrt(fan_in)
             init.uniform_(self.bias, -bound, bound)
 
-    def forward(self, input):   
+    def forward(self, input):
         # start_time = time.time()
         out = torch.zeros([input.size(0),self.weight.size(0)], dtype=torch.float, device=torch.device('cuda:0'))
         if self.bias is not None:
@@ -43,14 +43,14 @@ class UnoptimizedLinear(nn.Module):
             temp = torch.zeros([self.weight.size(0)], dtype=torch.float, device=torch.device('cuda:0'))
             unoptimized_cuda_kernel.UNOPTIMIZED_LINEAR(input, self.weight, temp,out)
         # end_time = time.time()
-        # print("Linear Time:", end_time - start_time )   
+        # print("Linear Time:", end_time - start_time )
         return out
 
-       
+
 
     def extra_repr(self):
         # (Optional)Set the extra information about this module. You can test
         # it by printing an object of this class.
         return 'in_features={}, out_features={}, bias={}'.format(
-            self.in_features, self.out_features, self.bias is not None  
+            self.in_features, self.out_features, self.bias is not None
         )

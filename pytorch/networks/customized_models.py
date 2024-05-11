@@ -1,9 +1,9 @@
 """
 Creates a MobileNetV2 Model as defined in:
-Mark Sandler, Andrew Howard, Menglong Zhu, Andrey Zhmoginov, Liang-Chieh Chen. (2018). 
+Mark Sandler, Andrew Howard, Menglong Zhu, Andrey Zhmoginov, Liang-Chieh Chen. (2018).
 MobileNetV2: Inverted Residuals and Linear Bottlenecks
 arXiv preprint arXiv:1801.04381.
-import from https://github.com/tonylins/pytorch-mobilenet-v2 
+import from https://github.com/tonylins/pytorch-mobilenet-v2
 """
 
 import torch
@@ -30,14 +30,14 @@ class MobileNetV1(nn.Module):
                 nn.Conv2d(inp, inp, 3, stride, 1, groups=inp, bias=False),
                 nn.BatchNorm2d(inp),
                 nn.ReLU(inplace=True),
-    
+
                 nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
                 nn.BatchNorm2d(oup),
                 nn.ReLU(inplace=True),
             )
 
         self.model = nn.Sequential(
-            conv_bn(  3,  32, 2), 
+            conv_bn(  3,  32, 2),
             conv_dw( 32,  64, 1),
             conv_dw( 64, 128, 2),
             conv_dw(128, 128, 1),
@@ -198,15 +198,15 @@ def mobilenetv1(**kwargs):
     if pretrained is not None and pretrained == True:
         saved_checkpoint = torch.load("./models/imagenet/original_pretrained_models/mobilenet_v1_sgd_rmsprop_69.526.tar")
         state_dict = saved_checkpoint["state_dict"]
-        
+
         # create new OrderedDict that does not contain module.
         new_state_dict = OrderedDict()
         for k, v in state_dict.items():
             name = k[7:] # remove module.
             new_state_dict[name] = v
-        
+
         # load params
-        model.load_state_dict(new_state_dict)	
+        model.load_state_dict(new_state_dict)
 
     return model
 

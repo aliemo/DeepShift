@@ -3,13 +3,13 @@
 #include <vector>
 
 // CUDA forward declarations
-void COMPRESS_SIGN_SHIFT_GPU(torch::Tensor shift, torch::Tensor sign, torch::Tensor weight, 
+void COMPRESS_SIGN_SHIFT_GPU(torch::Tensor shift, torch::Tensor sign, torch::Tensor weight,
                         int base, int bits, int out_c, int in_c, int height, int width, int row_length, int num);
 void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
                 torch::Tensor shift,
                 torch::Tensor bias,
                 torch::Tensor output,
-                torch::IntArrayRef strides, 
+                torch::IntArrayRef strides,
                 torch::IntArrayRef padding, int filter_height, int filter_width, int base, int bits);
 void DEEP_SHIFT_LINEAR_GPU(
     torch::Tensor input,
@@ -42,7 +42,7 @@ void DEEP_SHIFT_CONV(torch::Tensor data_im,
         torch::Tensor shift,
         torch::Tensor bias,
         torch::Tensor output,
-        torch::IntArrayRef strides, 
+        torch::IntArrayRef strides,
         torch::IntArrayRef padding, int filter_height, int filter_width, int base, int bits)
 {
     CHECK_INPUT(data_im);

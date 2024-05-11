@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		}
+	],
+	"settings": {
+		"files.trimTrailingWhitespace": true,
+		"files.trimFinalNewlines": true,
+		"vhdl.formatter.insertFinalNewline": true
+	}
+}

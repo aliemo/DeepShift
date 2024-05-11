@@ -92,7 +92,7 @@ class UnoptimizedConv2d(_UnoptimizedConvNd):
         if len(self.stride) == 1:
             strides_h = self.stride[0]
             strides_w = self.stride[0]
-        else: 
+        else:
             strides_h = self.stride[0]
             strides_w = self.stride[1]
         out_height = int((input.size(2) - self.weight.size(2)) / strides_h +1)

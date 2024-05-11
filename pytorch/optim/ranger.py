@@ -3,17 +3,17 @@
 
 #Ranger has now been used to capture 12 records on the FastAI leaderboard.
 
-#This version = 9.3.19  
+#This version = 9.3.19
 
 #Credits:
 #RAdam -->  https://github.com/LiyuanLucasLiu/RAdam
 #Lookahead --> rewritten by lessw2020, but big thanks to Github @LonePatient and @RWightman for ideas from their code.
 #Lookahead paper --> MZhang,G Hinton  https://arxiv.org/abs/1907.08610
 
-#summary of changes: 
-#full code integration with all updates at param level instead of group, moves slow weights into state dict (from generic weights), 
+#summary of changes:
+#full code integration with all updates at param level instead of group, moves slow weights into state dict (from generic weights),
 #supports group learning rates (thanks @SHolderbach), fixes sporadic load from saved model issues.
-#changes 8/31/19 - fix references to *self*.N_sma_threshold; 
+#changes 8/31/19 - fix references to *self*.N_sma_threshold;
                 #changed eps to 1e-5 as better default than 1e-8.
 
 import math
@@ -56,7 +56,7 @@ class Ranger(Optimizer):
 
         #look ahead params
         self.alpha = alpha
-        self.k = k 
+        self.k = k
 
         #radam buffer for state
         self.radam_buffer = [[None,None,None] for ind in range(10)]
@@ -64,7 +64,7 @@ class Ranger(Optimizer):
         #self.first_run_check=0
 
         #lookahead weights
-        #9/2/19 - lookahead param tensors have been moved to state storage.  
+        #9/2/19 - lookahead param tensors have been moved to state storage.
         #This should resolve issues with load/save where weights were left in GPU memory from first load, slowing down future runs.
 
         #self.slow_weights = [[p.clone().detach() for p in group['params']]
@@ -81,7 +81,7 @@ class Ranger(Optimizer):
 
     def step(self, closure=None):
         loss = None
-        #note - below is commented out b/c I have other work that passes back the loss as a float, and thus not a callable closure.  
+        #note - below is commented out b/c I have other work that passes back the loss as a float, and thus not a callable closure.
         #Uncomment if you need to use the actual closure...
 
         #if closure is not None:
@@ -109,7 +109,7 @@ class Ranger(Optimizer):
                     state['exp_avg'] = torch.zeros_like(p_data_fp32)
                     state['exp_avg_sq'] = torch.zeros_like(p_data_fp32)
 
-                    #look ahead weight storage now in state dict 
+                    #look ahead weight storage now in state dict
                     state['slow_buffer'] = torch.empty_like(p.data)
                     state['slow_buffer'].copy_(p.data)
 
@@ -117,7 +117,7 @@ class Ranger(Optimizer):
                     state['exp_avg'] = state['exp_avg'].type_as(p_data_fp32)
                     state['exp_avg_sq'] = state['exp_avg_sq'].type_as(p_data_fp32)
 
-                #begin computations 
+                #begin computations
                 exp_avg, exp_avg_sq = state['exp_avg'], state['exp_avg_sq']
                 beta1, beta2 = group['betas']
 

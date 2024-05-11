@@ -39,7 +39,7 @@ __device__ int COMPRESS(const int* __restrict__ shift, const int* __restrict__ s
 
 __global__ void COMPRESS_SIGN_SHIFT_GPU_KERNEL( int* __restrict__ shift,  int* __restrict__ sign, int* __restrict__ weight, int oc, int in_c, int height, int width, int num,int base, int bits, int compressed_row_length, int row_length)
 {
-    int index = blockIdx.x * blockDim.x + threadIdx.x; 
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
     if(index < compressed_row_length) {
         int* shift_sub = &shift[oc * in_c * height * width];
         int* sign_sub = &sign[oc * in_c * height * width];
@@ -48,8 +48,8 @@ __global__ void COMPRESS_SIGN_SHIFT_GPU_KERNEL( int* __restrict__ shift,  int* _
         if( (index + 1) * num >= in_c * height * width) {
             length = in_c * height * width - index * num;
         }
-        weight_sub[index] = COMPRESS(&shift_sub[index * num], &sign_sub[index * num], length, base, bits); 
-        
+        weight_sub[index] = COMPRESS(&shift_sub[index * num], &sign_sub[index * num], length, base, bits);
+
     }
     __syncthreads();
 }
@@ -62,16 +62,16 @@ __global__ void DEEP_SHIFT_GEMM_GPU_KERNEL(
     int* __restrict__ output,
     const int n,
     const int m,
-    const int k, 
+    const int k,
     const int base,
     const int max,
-    const int row_length) 
+    const int row_length)
 {
     const int row = threadIdx.y;
     const int col = threadIdx.x;
     for(int blockRow = blockIdx.y;blockDim.y * blockRow < m; blockRow = blockRow + gridDim.y){
         for(int blockCol = blockIdx.x;blockDim.x * blockCol < k; blockCol = blockCol + gridDim.x){
-            
+
             const int compressed_row = row_length / num;
             int* Csub = &output[BLOCK_SIZE * k * blockRow + BLOCK_SIZE * blockCol];
             __shared__ int As[BLOCK_SIZE *BLOCK_SIZE * num];
@@ -85,12 +85,12 @@ __global__ void DEEP_SHIFT_GEMM_GPU_KERNEL(
                         As[row * BLOCK_SIZE * num + col * num + d] = Asub[row * n + col * num + d];
                 }
                 Bs[row * BLOCK_SIZE + col] = Bsub[row * compressed_row + col];
-                
+
                 __syncthreads();
-               
+
                 #pragma unroll
                 for (int j = 0; j < BLOCK_SIZE ; ++j){
-                    if(col + blockCol* BLOCK_SIZE< k 
+                    if(col + blockCol* BLOCK_SIZE< k
                         && row + blockRow* BLOCK_SIZE< m ){
                         int whole = Bs[col * BLOCK_SIZE + j];
                         #pragma unroll
@@ -109,13 +109,13 @@ __global__ void DEEP_SHIFT_GEMM_GPU_KERNEL(
                             }
                         }
                     }
-                } 
+                }
                 __syncthreads();
             }
             if(col + blockCol* BLOCK_SIZE< k && row + blockRow* BLOCK_SIZE< m) Csub[row*k+col] = Cvalue + bias[col + blockCol* BLOCK_SIZE];
             __syncthreads();
         }
-        
+
     }
 }
 
@@ -144,16 +144,16 @@ __global__ void IM2COL(
         const int ic = w / (filter_height * filter_width);
         const int hh_f = (w % (filter_height * filter_width)) / filter_width;
         const int ww_f = (w % (filter_height * filter_width)) % filter_width;
-        
+
         col[index] = im[ww_f + strides_w * w_out +
                         (hh_f + strides_h * h_out) * in_width +
                         ic * in_width * in_height +
                         n * in_width * in_height * input_features];
-    }     
+    }
 }
 
 __global__ void COL2IM(
-    const int total, 
+    const int total,
     const int* __restrict__ col,
     int* __restrict__ im,
     const int out_height,
@@ -270,7 +270,7 @@ void DEEP_SHIFT_LINEAR_GPU(
                     out_features, base,max, comm * num);
               }));
         }
-        
+
     }
     else if(bits == 4){
         if(base == 0){
@@ -297,7 +297,7 @@ void DEEP_SHIFT_LINEAR_GPU(
                     out_features, base,max, comm * num);
               }));
         }
-        
+
     }
     else if(bits == 5){
         if(base == 0){
@@ -324,7 +324,7 @@ void DEEP_SHIFT_LINEAR_GPU(
                     out_features,base, max, comm * num);
               }));
         }
-        
+
     }
     else if(bits == 6){
         if(base == 0){
@@ -351,7 +351,7 @@ void DEEP_SHIFT_LINEAR_GPU(
                     out_features, base,max, comm * num);
               }));
         }
-        
+
     }
     else if(bits == 7){
         if(base == 0){
@@ -378,12 +378,12 @@ void DEEP_SHIFT_LINEAR_GPU(
                     out_features, base,max, comm * num);
               }));
         }
-        
+
     }
     else{
         std::cout<<"ERROR: unhandled case\n";
     }
-      
+
 }
 void COMPRESS_SIGN_SHIFT_GPU(torch::Tensor shift, torch::Tensor sign, torch::Tensor weight, int base, int bits, int out_c, int in_c, int height, int width, int row_length, int num)
 {
@@ -400,7 +400,7 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
                 torch::Tensor shift,
                 torch::Tensor bias,
                 torch::Tensor output,
-                torch::IntArrayRef strides, 
+                torch::IntArrayRef strides,
                 torch::IntArrayRef padding, int filter_height, int filter_width, int base, int bits)
 {
     int strides_h;
@@ -411,7 +411,7 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
     }
     else{
         strides_h = strides[0];
-        strides_w = strides[1]; 
+        strides_w = strides[1];
     }
     int k  = filter_height * filter_width * data_im.size(1);
     int num_patch = output.size(0) * output.size(2) * output.size(3);
@@ -421,12 +421,12 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
 
     int threads = MAX_THREADS;
     int tmp = (k * num_patch + threads -1) / threads;
-    tmp  = (tmp > MAX_BLOCKS) ? MAX_BLOCKS: tmp;  
+    tmp  = (tmp > MAX_BLOCKS) ? MAX_BLOCKS: tmp;
     const dim3 blk(tmp);
     AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "IM2COL cuda", ([&] {
         IM2COL<<<blk, threads>>>(
             k * num_patch,
-            data_im.data<int>(), 
+            data_im.data<int>(),
             data_col,
             filter_height,
             filter_width,
@@ -442,10 +442,10 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
 
     int filter_patch = output.size(1);
     dim3 blockDim(BLOCK_SIZE, BLOCK_SIZE);
-    
+
     int a1=filter_patch/ BLOCK_SIZE + 1;
     if(a1> MAX_BLOCKS){
-        a1 = MAX_BLOCKS;  
+        a1 = MAX_BLOCKS;
     }
     int a2=num_patch  / BLOCK_SIZE + 1;
     if(a2> MAX_BLOCKS) {
@@ -515,7 +515,7 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
     }
     else if(bits == 3) {
         if(base == 0){
-            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {  
+            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {
                 DEEP_SHIFT_GEMM_GPU_KERNEL<NUM_8, BIT_3, 0x07,0x08, ZERO_BASE><<<gridDim, blockDim>>>(
                     data_col,
                     shift.data<int>(),
@@ -527,7 +527,7 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
               }));
         }
         else {
-            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {  
+            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {
                 DEEP_SHIFT_GEMM_GPU_KERNEL<NUM_8, BIT_3, 0x07,0x08, NON_ZERO_BASE><<<gridDim, blockDim>>>(
                     data_col,
                     shift.data<int>(),
@@ -538,11 +538,11 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
                     filter_patch, base,max,comm * num);
               }));
         }
-        
+
     }
     else if(bits == 4) {
         if(base == 0){
-            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {  
+            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {
                 DEEP_SHIFT_GEMM_GPU_KERNEL<NUM_6, BIT_4, 0x0f,0x10, ZERO_BASE><<<gridDim, blockDim>>>(
                     data_col,
                     shift.data<int>(),
@@ -554,7 +554,7 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
               }));
         }
         else {
-            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {  
+            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {
                 DEEP_SHIFT_GEMM_GPU_KERNEL<NUM_6, BIT_4, 0x0f,0x10, NON_ZERO_BASE><<<gridDim, blockDim>>>(
                     data_col,
                     shift.data<int>(),
@@ -565,11 +565,11 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
                     filter_patch, base,max,comm * num);
               }));
         }
-        
+
     }
     else if(bits == 5){
         if(base == 0){
-            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {  
+            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {
                 DEEP_SHIFT_GEMM_GPU_KERNEL<NUM_5, BIT_5, 0x1f,0x20, ZERO_BASE><<<gridDim, blockDim>>>(
                     data_col,
                     shift.data<int>(),
@@ -581,7 +581,7 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
               }));
         }
         else {
-            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {  
+            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {
                 DEEP_SHIFT_GEMM_GPU_KERNEL<NUM_5, BIT_5, 0x1f,0x20, NON_ZERO_BASE><<<gridDim, blockDim>>>(
                     data_col,
                     shift.data<int>(),
@@ -592,11 +592,11 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
                     filter_patch, base,max,comm * num);
               }));
         }
-        
+
     }
     else if(bits == 6){
         if(base == 0){
-            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {  
+            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {
                 DEEP_SHIFT_GEMM_GPU_KERNEL<NUM_4, BIT_6, 0x3f,0x40, ZERO_BASE><<<gridDim, blockDim>>>(
                     data_col,
                     shift.data<int>(),
@@ -608,7 +608,7 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
               }));
         }
         else{
-            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {  
+            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {
                 DEEP_SHIFT_GEMM_GPU_KERNEL<NUM_4, BIT_6, 0x3f,0x40, NON_ZERO_BASE><<<gridDim, blockDim>>>(
                     data_col,
                     shift.data<int>(),
@@ -619,11 +619,11 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
                     filter_patch, base,max,comm * num);
               }));
         }
-        
+
     }
     else if(bits == 7){
         if(base == 0){
-            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {  
+            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {
                 DEEP_SHIFT_GEMM_GPU_KERNEL<NUM_4, BIT_7, 0x7f,0x80, ZERO_BASE><<<gridDim, blockDim>>>(
                     data_col,
                     shift.data<int>(),
@@ -635,7 +635,7 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
               }));
         }
         else {
-            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {  
+            AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "DEEP_SHIFT_GEMM_GPU_KERNEL kernel", ([&] {
                 DEEP_SHIFT_GEMM_GPU_KERNEL<NUM_4, BIT_7, 0x7f,0x80, NON_ZERO_BASE><<<gridDim, blockDim>>>(
                     data_col,
                     shift.data<int>(),
@@ -644,9 +644,9 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
                     k,
                     num_patch,
                     filter_patch, base,max,comm * num);
-              }));  
+              }));
         }
-        
+
     }
     else{
         std::cout<<"ERROR: unhandled case\n";
@@ -658,7 +658,7 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
     AT_DISPATCH_INTEGRAL_TYPES(data_im.type(), "COL2IM cuda", ([&] {
         COL2IM<<<block1, threads>>>(
             num_patch * output.size(1),
-            out_col, 
+            out_col,
             output.data<int>(),
             output.size(2),
             output.size(3),
@@ -667,6 +667,3 @@ void DEEP_SHIFT_CONV_GPU(torch::Tensor data_im,
     cudaFree(data_col);
     cudaFree(out_col);
 }
-
-
-

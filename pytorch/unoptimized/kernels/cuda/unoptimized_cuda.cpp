@@ -46,7 +46,7 @@ void UNOPTIMIZED_CONV(
     CHECK_INPUT(input);
     CHECK_INPUT(weight);
     CHECK_INPUT(bias);
-    
+
     UNOPTIMIZED_CONV_GPU(input, weight, bias, output,strides ,padding );
 }
 
