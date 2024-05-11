@@ -15,3 +15,4 @@ from .senet import *
 from .shufflenet import *
 from .shufflenetv2 import *
 from .vgg import *
+from .customized_models import *

@@ -31,7 +31,7 @@ from deepshift.convert import convert_to_shift, round_shift_weights, count_layer
 from unoptimized.convert import convert_to_unoptimized
 import unoptimized
 
-import cifar10_models as models
+import networks as models
 
 '''
 Unfortunately, none of the pytorch repositories with ResNets on CIFAR10 provides an 

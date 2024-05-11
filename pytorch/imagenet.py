@@ -31,7 +31,7 @@ from deepshift.convert import convert_to_shift, round_shift_weights, count_layer
 from unoptimized.convert import convert_to_unoptimized
 import unoptimized
 
-import customized_models
+import networks.customized_models as customized_models
 
 default_model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
