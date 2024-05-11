@@ -19,7 +19,11 @@ import deepshift
 import unoptimized
 from deepshift.convert import convert_to_shift, round_shift_weights, count_layer_type
 from unoptimized.convert import convert_to_unoptimized
-from networks.mnist_models import *
+import networks.mnist_models as models
+
+model_names = sorted(name for name in models.__dict__
+    if name.islower() and not name.startswith("__")
+    and callable(models.__dict__[name]))
 
 def train(args, model, device, train_loader, loss_fn, optimizer, epoch):
     model.train()
@@ -31,8 +35,8 @@ def train(args, model, device, train_loader, loss_fn, optimizer, epoch):
         loss.backward()
         optimizer.step()
         if batch_idx % args.log_interval == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
+            print('Train Epoch: {}/{} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                epoch, args.epochs, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.item()))
 
     return loss.item()
@@ -59,9 +63,9 @@ def main():
     # Training settings
     parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
     parser.add_argument('--type', default='linear',
-                        choices=['linear', 'conv'],
+                        choices=['linear', 'conv', 'lenet'],
                         help='model architecture type: ' +
-                        ' | '.join(['linear', 'conv']) +
+                        ' | '.join(['linear', 'conv', 'lenet']) +
                         ' (default: linear)')
     parser.add_argument('--model', default='', type=str, metavar='MODEL_PATH',
                         help='path to model file to load both its architecture and weights (default: none)')
@@ -155,9 +159,12 @@ def main():
             raise Exception("Unable to load model from " + args.model)
     else:
         if args.type == 'linear':
-            model = LinearMNIST().to(device)
+            model = models.LinearMNIST().to(device)
         elif args.type == 'conv':
-            model = ConvMNIST().to(device)
+            model = models.ConvMNIST().to(device)
+        elif args.type == 'lenet':
+            model = models.LeNetMNIST().to(device)
+
 
         if args.pretrained:
             model.load_state_dict(torch.load("./models/mnist/simple_" + args.type + "/shift_0/weights.pth"))

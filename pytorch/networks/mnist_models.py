@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
+__all__ = ['LinearMNIST', 'ConvMNIST', 'LeNetMNIST']
+
 class LinearMNIST(nn.Module):
     def __init__(self):
         super(LinearMNIST, self).__init__()
